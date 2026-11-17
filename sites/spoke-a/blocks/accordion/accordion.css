@@ -1,0 +1,4 @@
+/* SpokeA overrides, loaded after blocks/accordion/accordion.css */
+.accordion.spoke-a {
+    border-color: #fff;
+}

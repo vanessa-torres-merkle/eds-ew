@@ -25,6 +25,21 @@ npm i
 npm run lint
 ```
 
+## Site-local block extensions
+
+A site can extend a shared block without changing what authors insert (e.g. `Accordion`).
+
+1. Set page metadata `site` (e.g. `spoke-a`) on every page of that site.
+1. Add the extension under `sites/<site>/blocks/<block>/<block>.js` and `.css`. The JS default export receives the block element.
+1. Register it in `scripts/block-extensions.js` (`registry[site][block]` with `mode`, `js`, `css`; `js` and `css` are optional).
+1. The shared block's entry point (`blocks/<block>/<block>.js`) calls `decorateWithExtension(block, name, sharedDecorate)`. Shared logic lives in `scripts/`.
+
+Behavior:
+- CSS: shared `blocks/<block>/<block>.css` loads first, then the site CSS, so site rules override on equal specificity. Scope them to the block class.
+- `mode: 'extend'`: shared decorator runs, then the site decorator on the already-decorated block.
+- `mode: 'replace'`: only the site decorator runs, on the original markup (shared CSS still loads).
+- Sites without a registration get the shared behavior. Registered assets that fail to load are logged to the console.
+
 ## Local development
 
 1. Create a new repository based on the `aem-boilerplate` template
