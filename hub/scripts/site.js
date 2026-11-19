@@ -7,7 +7,9 @@ const DEFAULTS = {
 };
 
 let config = { ...DEFAULTS };
-let locale = { prefix: '', code: 'en', lang: 'en', region: '' };
+let locale = {
+  prefix: '', code: 'en', lang: 'en', region: '',
+};
 
 export const getSiteConfig = () => config;
 export const getLocale = () => locale;
@@ -53,10 +55,14 @@ function resolveLocale(pathname) {
   if (isLocaleSegment(seg)) {
     const code = seg.toLowerCase();
     const [lang, region = ''] = code.split('-');
-    return { prefix: `/${code}`, code, lang, region };
+    return {
+      prefix: `/${code}`, code, lang, region,
+    };
   }
   const [lang, region = ''] = config.defaultLocale.split('-');
-  return { prefix: '', code: config.defaultLocale, lang, region };
+  return {
+    prefix: '', code: config.defaultLocale, lang, region,
+  };
 }
 
 /* ---------- theme ---------- */

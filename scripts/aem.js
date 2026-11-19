@@ -554,12 +554,10 @@ async function loadBlock(block) {
 
     const decorationComplete = (async () => {
       try {
-        for (const url of layers.js) {
-          // eslint-disable-next-line no-await-in-loop
+        await layers.js.reduce((previous, url) => previous.then(async () => {
           const mod = await import(url);
-          // eslint-disable-next-line no-await-in-loop
           if (mod.default) await mod.default(block);
-        }
+        }), Promise.resolve());
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(`failed to load module for ${blockName}`, error);

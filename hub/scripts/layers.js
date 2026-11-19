@@ -1,7 +1,22 @@
 // Templates that exist in the hub. Add a name here when you create hub/templates/<name>/.
 const HUB_TEMPLATES = ['article', 'landing'];
 
-const state = { brand: 'hub', spokeBase: null, blocks: {}, templates: {}, hooks: {} };
+const state = {
+  brand: 'hub', spokeBase: null, blocks: {}, templates: {}, hooks: {},
+};
+
+// Returns the CSS and JS files to load, in order.
+export function resolveBlock(name) {
+  const hub = `/hub/blocks/${name}/${name}`;
+  const spoke = state.spokeBase && `${state.spokeBase}/blocks/${name}/${name}`;
+  const mode = state.spokeBase ? state.blocks[name] : undefined;
+
+  if (mode === 'replace') return { css: [`${spoke}.css`], js: [`${spoke}.js`] };
+  if (mode === 'extend') {
+    return { css: [`${hub}.css`, `${spoke}.css`], js: [`${hub}.js`, `${spoke}.js`] };
+  }
+  return { css: [`${hub}.css`], js: [`${hub}.js`] };
+}
 
 export async function initLayers(brand) {
   window.hlx.resolveBlock = resolveBlock;
@@ -20,19 +35,6 @@ export async function initLayers(brand) {
     console.warn(`No spoke layer for "${brand}", using hub only`, e);
   }
   return state;
-}
-
-// Returns the CSS and JS files to load, in order.
-export function resolveBlock(name) {
-  const hub = `/hub/blocks/${name}/${name}`;
-  const spoke = state.spokeBase && `${state.spokeBase}/blocks/${name}/${name}`;
-  const mode = state.spokeBase ? state.blocks[name] : undefined;
-
-  if (mode === 'replace') return { css: [`${spoke}.css`], js: [`${spoke}.js`] };
-  if (mode === 'extend') {
-    return { css: [`${hub}.css`, `${spoke}.css`], js: [`${hub}.js`, `${spoke}.js`] };
-  }
-  return { css: [`${hub}.css`], js: [`${hub}.js`] };
 }
 
 /**

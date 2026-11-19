@@ -15,7 +15,9 @@ import {
 
 import { initSite, getSiteConfig, decorateLinks } from '../hub/scripts/site.js';
 
-import { initLayers, loadSpokeStyles, runHook, resolveTemplate } from '../hub/scripts/layers.js';
+import {
+  initLayers, loadSpokeStyles, runHook, resolveTemplate,
+} from '../hub/scripts/layers.js';
 
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
   const innerTT = window.trustedTypes.createPolicy('tt-inner', {
@@ -166,9 +168,9 @@ export function decorateMain(main) {
  * @param {Element} doc The container element
  */
 async function loadEager(doc) {
-  await initSite();                              // config, locale, brand
-  await initLayers(getSiteConfig().brand);       // loads spokes/<brand>/spoke.js
-  await loadSpokeStyles();                       // spokes/<brand>/styles/theme.css
+  await initSite(); // config, locale, brand
+  await initLayers(getSiteConfig().brand); // loads spokes/<brand>/spoke.js
+  await loadSpokeStyles(); // spokes/<brand>/styles/theme.css
   decorateTemplateAndTheme();
   const main = doc.querySelector('main');
   if (main) {
@@ -182,12 +184,10 @@ async function loadEager(doc) {
           // eslint-disable-next-line no-console
           console.warn(`Template CSS failed: ${href}`, e);
         })));
-        for (const url of layers.js) {
-          // eslint-disable-next-line no-await-in-loop
+        await layers.js.reduce((previous, url) => previous.then(async () => {
           const mod = await import(url);
-          // eslint-disable-next-line no-await-in-loop
           if (mod.default) await mod.default(main);
-        }
+        }), Promise.resolve());
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('Template failed to load', e);
