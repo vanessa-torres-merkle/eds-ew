@@ -191,7 +191,7 @@ async function loadEager(doc) {
       ]);
       mod.default(main);
     }
-    /** end **/
+
     document.body.classList.add('appear');
     await loadSection(main.querySelector('.section'), waitForFirstImage);
   }
