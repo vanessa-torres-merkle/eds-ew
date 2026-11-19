@@ -33,8 +33,14 @@ export async function loadConfig() {
 /* ---------- brand ---------- */
 
 function resolveBrand() {
-  const q = new URLSearchParams(window.location.search).get('brand');
-  if (q && window.location.hostname === 'localhost' && /^[a-z0-9-]+$/.test(q)) return q;
+  if (window.location.hostname === 'localhost') {
+    try {
+      const q = new URLSearchParams(window.location.search).get('brand');
+      if (q && /^[a-z0-9-]+$/.test(q)) sessionStorage.setItem('dev-brand', q);
+      const stored = sessionStorage.getItem('dev-brand');
+      if (stored) return stored;
+    } catch (e) { /* storage blocked: fall through */ }
+  }
   if (config.brand && /^[a-z0-9-]+$/.test(config.brand)) return config.brand;
   const site = window.location.hostname.split('.')[0].split('--')[1];
   return site || 'hub';
