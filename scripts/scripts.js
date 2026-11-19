@@ -168,14 +168,19 @@ async function loadEager(doc) {
     decorateMain(main);
     /**
      * Load template-specific resources - Added by VTorres
-     * TEMPLATES: should include all templates that have a template.js and template.css file in the templates folder
+     * TEMPLATES: all templates that have a template.js, template.css in the templates folder
      * E.g. TEMPLATES = ['article', 'landing', 'product', 'blog'];
      * Notes:
-     * The template.js file should export a default function that takes the main element as an argument and decorates it accordingly.
-     * The template.css file should contain the styles for the template and will be loaded automatically.
-     * The template.js file should be located in the templates folder and should be named after the template (e.g. article.js for the article template).
-     * The template.css file should be located in the templates folder and should be named after the template (e.g. article.css for the article template).
-     * The template.js file should export a default function that takes the main element as an argument and decorates it accordingly.
+     * The template.js export a default function that takes the main element as an argument and
+     * decorates it accordingly.
+     * The template.css file should contain the styles for the template and will be loaded
+     * automatically.
+     * The template.js file should be located in the templates folder and should be named after
+     * the template (e.g. article.js for the article template).
+     * The template.css file should be located in the templates folder and should be named after
+     * the template (e.g. article.css for the article template).
+     * The template.js file should export a default function that takes the main element as an
+     * argument and decorates it accordingly.
      */
     const TEMPLATES = ['article'];
     const template = getMetadata('template');
