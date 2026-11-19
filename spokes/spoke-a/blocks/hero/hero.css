@@ -1,0 +1,2 @@
+/* loaded after the hub hero.css, so equal-specificity rules win */
+main .hero .spoke-a-title { letter-spacing: 0.02em; }

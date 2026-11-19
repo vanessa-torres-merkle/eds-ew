@@ -3,7 +3,7 @@
 Edge Delivery Services. Read a block first. Omissions are in the repo or known.
 
 ## Avoid
-- `scripts/aem.js` is vendored. Never edit.
+- `scripts_old` is vendored. Never edit.
 - Markup comes from the backend. `curl localhost:3000/x.plain.html` first.
 - `buildAutoBlocks` rewrites content before your block runs.
 - Authors omit and add cells. Decorate defensively.

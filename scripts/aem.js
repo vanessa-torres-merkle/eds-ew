@@ -537,29 +537,36 @@ async function loadBlock(block) {
   if (status !== 'loading' && status !== 'loaded') {
     block.dataset.blockStatus = 'loading';
     const { blockName } = block.dataset;
-    try {
-      const cssLoaded = loadCSS(`${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`);
-      const decorationComplete = new Promise((resolve) => {
-        (async () => {
-          try {
-            const mod = await import(
-              `${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.js`
-            );
-            if (mod.default) {
-              await mod.default(block);
-            }
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error(`failed to load module for ${blockName}`, error);
-          }
-          resolve();
-        })();
-      });
-      await Promise.all([cssLoaded, decorationComplete]);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`failed to load block ${blockName}`, error);
-    }
+
+    const layers = window.hlx.resolveBlock
+      ? window.hlx.resolveBlock(blockName)
+      : {
+        css: [`${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`],
+        js: [`${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.js`],
+      };
+
+    const cssLoaded = Promise.all(
+      layers.css.map((href) => loadCSS(href).catch((e) => {
+        // eslint-disable-next-line no-console
+        console.warn(`CSS failed for ${blockName}: ${href}`, e);
+      })),
+    );
+
+    const decorationComplete = (async () => {
+      try {
+        for (const url of layers.js) {
+          // eslint-disable-next-line no-await-in-loop
+          const mod = await import(url);
+          // eslint-disable-next-line no-await-in-loop
+          if (mod.default) await mod.default(block);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(`failed to load module for ${blockName}`, error);
+      }
+    })();
+
+    await Promise.all([cssLoaded, decorationComplete]);
     block.dataset.blockStatus = 'loaded';
   }
   return block;

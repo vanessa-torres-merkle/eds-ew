@@ -13,6 +13,10 @@ import {
   buildBlock,
 } from './aem.js';
 
+import { initSite, getSiteConfig, decorateLinks } from '../hub/scripts/site.js';
+
+import { initLayers, loadSpokeStyles, runHook, resolveTemplate } from '../hub/scripts/layers.js';
+
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
   const innerTT = window.trustedTypes.createPolicy('tt-inner', {
     createHTML: (s) => s, // avoid stack overflow
@@ -42,7 +46,7 @@ if (window.trustedTypes && window.trustedTypes.createPolicy) {
  * load fonts.css and set a session storage flag
  */
 async function loadFonts() {
-  await loadCSS(`${window.hlx.codeBasePath}/styles/fonts.css`);
+  await loadCSS(`${window.hlx.codeBasePath}/hub/styles/fonts.css`);
   try {
     if (!window.location.hostname.includes('localhost')) sessionStorage.setItem('fonts-loaded', 'true');
   } catch (e) {
@@ -84,7 +88,7 @@ function buildAutoBlocks(main) {
     const fragments = [...main.querySelectorAll('a[href*="/fragments/"]')].filter((f) => !f.closest('.fragment'));
     if (fragments.length > 0) {
       // eslint-disable-next-line import/no-cycle
-      import('../blocks/fragment/fragment.js').then(({ loadFragment }) => {
+      import('../hub/blocks/fragment/fragment.js').then(({ loadFragment }) => {
         fragments.forEach(async (fragment) => {
           try {
             const { pathname } = new URL(fragment.href);
@@ -149,11 +153,12 @@ function decorateButtons(main) {
  */
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
+  decorateButtons(main);
   decorateIcons(main);
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
-  decorateButtons(main);
+  decorateLinks(main);
 }
 
 /**
@@ -161,40 +166,39 @@ export function decorateMain(main) {
  * @param {Element} doc The container element
  */
 async function loadEager(doc) {
-  document.documentElement.lang = 'en';
+  await initSite();                              // config, locale, brand
+  await initLayers(getSiteConfig().brand);       // loads spokes/<brand>/spoke.js
+  await loadSpokeStyles();                       // spokes/<brand>/styles/theme.css
   decorateTemplateAndTheme();
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
-    /**
-     * Load template-specific resources - Added by VTorres
-     * TEMPLATES: all templates that have a template.js, template.css in the templates folder
-     * E.g. TEMPLATES = ['article', 'landing', 'product', 'blog'];
-     * Notes:
-     * The template.js export a default function that takes the main element as an argument and
-     * decorates it accordingly.
-     * The template.css file should contain the styles for the template and will be loaded
-     * automatically.
-     * The template.js file should be located in the templates folder and should be named after
-     * the template (e.g. article.js for the article template).
-     * The template.css file should be located in the templates folder and should be named after
-     * the template (e.g. article.css for the article template).
-     * The template.js file should export a default function that takes the main element as an
-     * argument and decorates it accordingly.
-     */
-    const TEMPLATES = ['article'];
-    const template = getMetadata('template');
-    if (TEMPLATES.includes(template)) {
-      const [mod] = await Promise.all([
-        import(`../templates/${template}/${template}.js`),
-        loadCSS(`${window.hlx.codeBasePath}/templates/${template}/${template}.css`),
-      ]);
-      mod.default(main);
+
+    // Template resolution: hub first, spoke extends or replaces (see layers.js)
+    const layers = resolveTemplate(getMetadata('template'));
+    if (layers) {
+      try {
+        await Promise.all(layers.css.map((href) => loadCSS(href).catch((e) => {
+          // eslint-disable-next-line no-console
+          console.warn(`Template CSS failed: ${href}`, e);
+        })));
+        for (const url of layers.js) {
+          // eslint-disable-next-line no-await-in-loop
+          const mod = await import(url);
+          // eslint-disable-next-line no-await-in-loop
+          if (mod.default) await mod.default(main);
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Template failed to load', e);
+      }
     }
 
     document.body.classList.add('appear');
     await loadSection(main.querySelector('.section'), waitForFirstImage);
   }
+
+  await runHook('loadEager', doc);
 
   try {
     /* if desktop (proxy for fast connection) or fonts already loaded, load fonts.css */
@@ -222,8 +226,10 @@ async function loadLazy(doc) {
 
   loadFooter(doc.querySelector('body > footer'));
 
-  loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
+  loadCSS(`${window.hlx.codeBasePath}/hub/styles/lazy-styles.css`);
   loadFonts();
+
+  await runHook('loadLazy', doc);
 }
 
 /**
