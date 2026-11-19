@@ -9,6 +9,7 @@ import {
   loadSection,
   loadSections,
   loadCSS,
+  getMetadata,
   buildBlock,
 } from './aem.js';
 
@@ -165,6 +166,27 @@ async function loadEager(doc) {
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
+    /**
+     * Load template-specific resources - Added by VTorres
+     * TEMPLATES: should include all templates that have a template.js and template.css file in the templates folder
+     * E.g. TEMPLATES = ['article', 'landing', 'product', 'blog'];
+     * Notes:
+     * The template.js file should export a default function that takes the main element as an argument and decorates it accordingly.
+     * The template.css file should contain the styles for the template and will be loaded automatically.
+     * The template.js file should be located in the templates folder and should be named after the template (e.g. article.js for the article template).
+     * The template.css file should be located in the templates folder and should be named after the template (e.g. article.css for the article template).
+     * The template.js file should export a default function that takes the main element as an argument and decorates it accordingly.
+     */
+    const TEMPLATES = ['article'];
+    const template = getMetadata('template');
+    if (TEMPLATES.includes(template)) {
+      const [mod] = await Promise.all([
+        import(`../templates/${template}/${template}.js`),
+        loadCSS(`${window.hlx.codeBasePath}/templates/${template}/${template}.css`),
+      ]);
+      mod.default(main);
+    }
+    /** end **/
     document.body.classList.add('appear');
     await loadSection(main.querySelector('.section'), waitForFirstImage);
   }
