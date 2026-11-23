@@ -1,5 +1,9 @@
 body.article main .section > div {
     max-width: 800px;
     margin-inline: auto;
+    background-color: lightblue;
 }
-body.article .byline { color: var(--text-color); font-style: italic; }
+body.article .byline {
+    color: var(--text-color);
+    font-style: italic;
+}
