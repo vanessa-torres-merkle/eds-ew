@@ -28,7 +28,7 @@ function hasConsent() {
 function loadConsented() {
   if (consentedLoaded) return;
   consentedLoaded = true;
-  import('/consented.js');
+  import('./consented.js');
 }
 
 /**

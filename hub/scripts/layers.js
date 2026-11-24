@@ -63,6 +63,6 @@ export async function runHook(name, ...args) {
 
 export async function loadSpokeStyles() {
   if (!state.spokeBase) return;
-  const { loadCSS } = await import('/scripts/aem.js');
+  const { loadCSS } = await import('../../scripts/aem.js');
   await loadCSS(`${state.spokeBase}/styles/theme.css`);
 }
