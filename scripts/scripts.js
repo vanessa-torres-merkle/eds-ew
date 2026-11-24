@@ -11,13 +11,13 @@ import {
   loadCSS,
   getMetadata,
   buildBlock,
-} from './aem.js';
+} from '/scripts/aem.js';
 
-import { initSite, getSiteConfig, decorateLinks } from '../hub/scripts/site.js';
+import { initSite, getSiteConfig, decorateLinks } from '/hub/scripts/site.js';
 
 import {
   initLayers, loadSpokeStyles, runHook, resolveTemplate,
-} from '../hub/scripts/layers.js';
+} from '/hub/scripts/layers.js';
 
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
   const innerTT = window.trustedTypes.createPolicy('tt-inner', {
@@ -90,7 +90,7 @@ function buildAutoBlocks(main) {
     const fragments = [...main.querySelectorAll('a[href*="/fragments/"]')].filter((f) => !f.closest('.fragment'));
     if (fragments.length > 0) {
       // eslint-disable-next-line import/no-cycle
-      import('../hub/blocks/fragment/fragment.js').then(({ loadFragment }) => {
+      import('/hub/blocks/fragment/fragment.js').then(({ loadFragment }) => {
         fragments.forEach(async (fragment) => {
           try {
             const { pathname } = new URL(fragment.href);
@@ -237,7 +237,7 @@ async function loadLazy(doc) {
  * without impacting the user experience.
  */
 function loadDelayed() {
-  import('./consent-check.js');
+  import('/consent-check.js');
   // load anything that can be postponed to the latest here
 }
 
