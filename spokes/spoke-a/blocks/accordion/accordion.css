@@ -1,5 +1,5 @@
 .accordion details {
-    border: 1px solid #dadada;
+    border: 1px solid #f14a4a;
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
@@ -27,7 +27,7 @@
 
 .accordion details summary:focus,
 .accordion details summary:hover {
-    background-color: #ffff88;
+    background-color: #f14a4a;
 }
 
 .accordion details summary::-webkit-details-marker {
