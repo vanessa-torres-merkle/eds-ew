@@ -1,5 +1,9 @@
+// The EDS site name of the hub. Change it here if the hub site is renamed.
+export const HUB_SITE = 'eds-ew';
+// EDS site names of the spokes. Add a new spoke here (and under /spokes/<name>).
+export const SPOKES = ['spoke-a', 'spoke-b', 'pon', 'oxagon'];
+
 const DEFAULTS = {
-  brand: '',
   defaultLocale: 'en',
   locales: [],
   hosts: [],
@@ -32,18 +36,47 @@ export async function loadConfig() {
 
 /* ---------- brand ---------- */
 
+/**
+ * Environment detection: localhost vs. EDS (aem.page / aem.live / aem.network).
+ */
+export function isLocalhost() {
+  return ['localhost', '127.0.0.1'].includes(window.location.hostname);
+}
+
+/**
+ * Site name from an EDS hostname: {ref}--{site}--{org}.aem.(page|live)
+ */
+function getSiteFromHostname(hostname = window.location.hostname) {
+  const [, site] = hostname.split('.')[0].split('--');
+  return site || '';
+}
+
+/**
+ * Maps a site/brand name to 'hub' or a known spoke; anything else falls back to the hub.
+ */
+function toBrand(name) {
+  const value = (name || '').toLowerCase();
+  if (!value || value === 'hub' || value === HUB_SITE) return 'hub';
+  if (SPOKES.includes(value)) return value;
+  // eslint-disable-next-line no-console
+  console.warn(`Unknown site/brand "${name}", using hub. Known spokes: ${SPOKES.join(', ')}`);
+  return 'hub';
+}
+
+/**
+ * localhost: ?brand= (remembered per tab). EDS: derived from the domain.
+ */
 function resolveBrand() {
-  if (window.location.hostname === 'localhost') {
+  if (isLocalhost()) {
+    let name = 'hub';
     try {
       const q = new URLSearchParams(window.location.search).get('brand');
-      if (q && /^[a-z0-9-]+$/.test(q)) sessionStorage.setItem('dev-brand', q);
-      const stored = sessionStorage.getItem('dev-brand');
-      if (stored) return stored;
+      if (q && /^[a-z0-9-]+$/i.test(q)) sessionStorage.setItem('dev-brand', q);
+      name = sessionStorage.getItem('dev-brand') || name;
     } catch (e) { /* storage blocked: fall through */ }
+    return toBrand(name);
   }
-  if (config.brand && /^[a-z0-9-]+$/.test(config.brand)) return config.brand;
-  const site = window.location.hostname.split('.')[0].split('--')[1];
-  return site || 'hub';
+  return toBrand(getSiteFromHostname());
 }
 
 /* ---------- locale ---------- */

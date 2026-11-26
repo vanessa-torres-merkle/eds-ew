@@ -156,7 +156,7 @@ function decorateButtons(main) {
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
   decorateButtons(main);
-  decorateIcons(main);
+  decorateIcons(main, '/hub'); // icons live in /hub/icons
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
