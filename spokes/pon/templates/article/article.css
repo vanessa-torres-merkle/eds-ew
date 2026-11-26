@@ -1,0 +1,5 @@
+body.article main .section > div {
+    max-width: 800px;
+    margin-inline: auto;
+}
+body.article .byline { color: var(--text-color); font-weight: bold; }
