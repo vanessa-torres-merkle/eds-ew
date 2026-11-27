@@ -1,7 +1,13 @@
 // The EDS site name of the hub. Change it here if the hub site is renamed.
 export const HUB_SITE = 'eds-ew';
 // EDS site names of the spokes. Add a new spoke here (and under /spokes/<name>).
-export const SPOKES = ['spoke-a', 'spoke-b', 'pon', 'oxagon'];
+export const SPOKES = ['spoke-a', 'spoke-b', 'neom', 'pon', 'oxagon'];
+// Production domains (live only). Maps domain -> 'hub' or a spoke name from SPOKES.
+export const DOMAINS = {
+  'www.neom.com': 'neom',
+  'www.local.portofneom.com': 'pon',
+  'www.oxagon.com': 'oxagon',
+};
 
 const DEFAULTS = {
   defaultLocale: 'en',
@@ -63,8 +69,21 @@ function toBrand(name) {
   return 'hub';
 }
 
+function isEdsHost(hostname = window.location.hostname) {
+  return /\.aem\.(page|live|network)$/.test(hostname);
+}
+
+function getBrandFromDomain(hostname = window.location.hostname) {
+  const host = hostname.toLowerCase();
+  const bare = host.replace(/^www\./, '');
+  const key = Object.keys(DOMAINS).find((d) => d === host || d.replace(/^www\./, '') === bare);
+  return key ? DOMAINS[key] : '';
+}
+
 /**
- * localhost: ?brand= (remembered per tab). EDS: derived from the domain.
+ * localhost: ?brand= (remembered per tab).
+ * EDS hosts (aem.page/live): site name from the domain.
+ * Production domains: looked up in DOMAINS.
  */
 function resolveBrand() {
   if (isLocalhost()) {
@@ -76,7 +95,8 @@ function resolveBrand() {
     } catch (e) { /* storage blocked: fall through */ }
     return toBrand(name);
   }
-  return toBrand(getSiteFromHostname());
+  if (isEdsHost()) return toBrand(getSiteFromHostname());
+  return toBrand(getBrandFromDomain());
 }
 
 /* ---------- locale ---------- */
